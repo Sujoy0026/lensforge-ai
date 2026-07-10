@@ -1,0 +1,6 @@
+{
+  "name": "Lensforge Studio",
+  "description": "An AI creator studio for image generation, background removal, and face enhancement.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
