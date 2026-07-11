@@ -23,7 +23,8 @@ import {
   ArrowRight,
   Zap,
   Layers,
-  ChevronRight
+  ChevronRight,
+  ArrowLeft
 } from "lucide-react";
 import Image from "next/image";
 import ReactCrop, { type Crop, type PixelCrop } from 'react-image-crop';
@@ -47,11 +48,20 @@ export default function Page() {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="w-72 border-r border-white/10 bg-[#050507] flex flex-col z-20"
       >
-        <div className="h-16 flex items-center px-6 border-b border-white/10 shrink-0">
-          <div className="w-6 h-6 bg-gradient-to-tr from-indigo-600 to-cyan-400 rounded flex items-center justify-center shadow-[0_0_10px_rgba(79,70,229,0.4)] mr-3">
-            <div className="w-3 h-3 bg-white/20 rounded-sm rotate-45 border border-white/40"></div>
+        <div className="h-16 flex items-center justify-between px-6 border-b border-white/10 shrink-0">
+          <div className="flex items-center">
+            <div className="w-6 h-6 bg-gradient-to-tr from-indigo-600 to-cyan-400 rounded flex items-center justify-center shadow-[0_0_10px_rgba(79,70,229,0.4)] mr-3">
+              <div className="w-3 h-3 bg-white/20 rounded-sm rotate-45 border border-white/40"></div>
+            </div>
+            <span className="text-lg font-bold tracking-tight text-white">LENS<span className="text-indigo-400">FORGE</span></span>
           </div>
-          <span className="text-lg font-bold tracking-tight text-white">LENS<span className="text-indigo-400">FORGE</span></span>
+          <button 
+            onClick={() => setActiveTool("landing")}
+            className="text-slate-500 hover:text-white transition-colors"
+            title="Back to Home"
+          >
+            <ArrowLeft size={18} />
+          </button>
         </div>
 
         <nav className="flex-1 p-4 space-y-2">
