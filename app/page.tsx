@@ -24,32 +24,45 @@ import {
   Zap,
   Layers,
   ChevronRight,
+  ChevronDown,
   ArrowLeft
 } from "lucide-react";
 import Image from "next/image";
 import ReactCrop, { type Crop, type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import AIBrainBackground from "./AIBrainBackground";
 
 type Tool = "landing" | "generate" | "bg-remove" | "enhance" | "edit";
 
 export default function Page() {
   const [activeTool, setActiveTool] = useState<Tool>("landing");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   if (activeTool === "landing") {
     return <LandingPage onEnter={setActiveTool} />;
   }
 
   return (
-    <div className="w-full h-screen bg-[#020203] text-slate-200 font-sans flex overflow-hidden select-none">
+    <div className="w-full h-screen bg-[#020203] text-slate-200 font-sans flex overflow-hidden select-none relative">
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 bg-black/60 z-30 lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
-      <motion.aside 
-        initial={{ x: -50, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="w-72 border-r border-white/10 bg-[#050507] flex flex-col z-20"
+      <aside 
+        className={`fixed lg:static inset-y-0 left-0 w-72 border-r border-white/5 bg-gradient-to-b from-[#121218] to-[#08080a] flex flex-col z-40 transition-transform duration-300 ease-in-out shadow-[20px_0_40px_rgba(0,0,0,0.5)] ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
         <div className="h-16 flex items-center justify-between px-6 border-b border-white/10 shrink-0">
-          <div className="flex items-center">
+          <div className="flex items-center cursor-pointer" onClick={() => setActiveTool("landing")}>
             <div className="w-6 h-6 bg-gradient-to-tr from-indigo-600 to-cyan-400 rounded flex items-center justify-center shadow-[0_0_10px_rgba(79,70,229,0.4)] mr-3">
               <div className="w-3 h-3 bg-white/20 rounded-sm rotate-45 border border-white/40"></div>
             </div>
@@ -71,25 +84,25 @@ export default function Page() {
             icon={<Wand2 size={18} />} 
             label="AI Image Generator" 
             active={activeTool === "generate"} 
-            onClick={() => setActiveTool("generate")} 
+            onClick={() => { setActiveTool("generate"); setIsMobileMenuOpen(false); }} 
           />
           <ToolButton 
             icon={<Scissors size={18} />} 
             label="Background Remover" 
             active={activeTool === "bg-remove"} 
-            onClick={() => setActiveTool("bg-remove")} 
+            onClick={() => { setActiveTool("bg-remove"); setIsMobileMenuOpen(false); }} 
           />
           <ToolButton 
             icon={<Sparkles size={18} />} 
             label="Face Enhancer" 
             active={activeTool === "enhance"} 
-            onClick={() => setActiveTool("enhance")} 
+            onClick={() => { setActiveTool("enhance"); setIsMobileMenuOpen(false); }} 
           />
           <ToolButton 
             icon={<SlidersHorizontal size={18} />} 
             label="Photo Editor" 
             active={activeTool === "edit"} 
-            onClick={() => setActiveTool("edit")} 
+            onClick={() => { setActiveTool("edit"); setIsMobileMenuOpen(false); }} 
           />
         </nav>
 
@@ -99,10 +112,21 @@ export default function Page() {
             <span>Preferences</span>
           </button>
         </div>
-      </motion.aside>
+      </aside>
 
       {/* Main Workspace */}
-      <main className="flex-1 bg-[#08080a] relative overflow-hidden flex flex-col">
+      <main className="flex-1 bg-gradient-to-br from-[#0d0d12] to-[#050507] relative overflow-hidden flex flex-col w-full shadow-[inset_20px_20px_60px_rgba(0,0,0,0.8),inset_-5px_-5px_20px_rgba(255,255,255,0.02)]">
+        {/* Mobile Header */}
+        <div className="lg:hidden h-16 flex items-center px-4 border-b border-white/10 shrink-0 bg-[#050507]">
+          <button 
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="p-2 -ml-2 text-slate-400 hover:text-white"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+          <div className="flex-1 text-center font-bold tracking-tight text-white mr-8 cursor-pointer" onClick={() => setActiveTool("landing")}>LENS<span className="text-indigo-400">FORGE</span></div>
+        </div>
+
         <AnimatePresence mode="wait">
           {activeTool === "generate" && <ImageGenerator key="generate" />}
           {activeTool === "bg-remove" && <BackgroundRemover key="bg-remove" />}
@@ -170,11 +194,11 @@ function ImageGenerator() {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      className="flex-1 flex flex-col p-8 gap-6 h-full"
+      exit={{ opacity: 0, y: -30 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className="flex-1 flex flex-col p-4 md:p-8 gap-4 md:gap-6 min-h-0 overflow-y-auto lg:overflow-hidden"
     >
       <div className="flex items-center justify-between shrink-0">
         <div>
@@ -185,16 +209,16 @@ function ImageGenerator() {
         </div>
       </div>
 
-      <div className="flex flex-1 gap-6 min-h-0">
+      <div className="flex flex-col-reverse lg:flex-row flex-1 gap-6 min-h-0">
         {/* Controls */}
-        <div className="w-80 flex flex-col gap-6 shrink-0 overflow-y-auto pr-2">
+        <div className="w-full lg:w-80 flex flex-col gap-6 shrink-0 overflow-y-auto pr-2">
           <div className="space-y-3">
             <label className="text-[10px] uppercase text-slate-500 font-bold tracking-widest block">Prompt</label>
             <textarea 
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Describe the image you want to create..."
-              className="w-full h-32 bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 resize-none transition-all"
+              className="w-full h-32 bg-black/20 border border-white/10 rounded-xl p-4 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 resize-none transition-all shadow-[inset_0_4px_10px_rgba(0,0,0,0.5)]"
             />
           </div>
 
@@ -220,7 +244,7 @@ function ImageGenerator() {
           <button 
             onClick={handleGenerate}
             disabled={!prompt.trim() || isGenerating}
-            className="w-full py-4 mt-auto bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:hover:bg-indigo-600 text-white rounded-xl font-bold shadow-[0_8px_20px_rgba(79,70,229,0.3)] border border-white/10 uppercase tracking-widest text-xs flex items-center justify-center gap-2 transition-all"
+            className="w-full py-4 mt-auto bg-gradient-to-b from-indigo-500 to-indigo-700 hover:from-indigo-400 hover:to-indigo-600 disabled:opacity-50 disabled:hover:from-indigo-500 disabled:hover:to-indigo-700 text-white rounded-xl font-bold shadow-[0_6px_0_#3730a3,0_15px_20px_rgba(79,70,229,0.4)] hover:-translate-y-1 hover:shadow-[0_8px_0_#3730a3,0_20px_25px_rgba(79,70,229,0.5)] active:translate-y-[6px] active:shadow-[0_0px_0_#3730a3,0_0px_0px_rgba(79,70,229,0)] border-t border-white/20 uppercase tracking-widest text-xs flex items-center justify-center gap-2 transition-all"
           >
             {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
             {isGenerating ? "Generating..." : "Generate"}
@@ -228,7 +252,7 @@ function ImageGenerator() {
         </div>
 
         {/* Viewport */}
-        <div className="flex-1 rounded-2xl border border-white/10 bg-black/50 relative flex items-center justify-center overflow-hidden">
+        <div className="flex-1 min-h-[300px] lg:min-h-0 rounded-2xl border border-white/10 bg-gradient-to-br from-[#0a0a0f] to-[#040405] relative flex items-center justify-center overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,0.8)] perspective-1000">
           {/* Decorative background */}
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/10 to-transparent pointer-events-none"></div>
           
@@ -242,7 +266,7 @@ function ImageGenerator() {
               <img 
                 src={resultImage} 
                 alt="Generated" 
-                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                className="max-w-full max-h-full object-contain rounded-2xl shadow-[0_30px_60px_rgba(0,0,0,0.8),0_10px_20px_rgba(0,0,0,0.6)] border border-white/10 ring-1 ring-black hover:[transform:rotateX(2deg)_rotateY(-2deg)_scale(1.02)] transition-all duration-500"
                 referrerPolicy="no-referrer"
               />
               <div className="absolute top-4 right-4 flex gap-2">
@@ -253,7 +277,7 @@ function ImageGenerator() {
                     a.download = `lensforge-${Date.now()}.png`;
                     a.click();
                   }}
-                  className="p-2 bg-black/60 hover:bg-black text-white rounded-lg backdrop-blur-md border border-white/10 transition-colors"
+                  className="p-2 bg-gradient-to-b from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 text-white rounded-lg backdrop-blur-md shadow-[0_4px_0_#334155] hover:-translate-y-0.5 hover:shadow-[0_6px_0_#334155] active:translate-y-[4px] active:shadow-[0_0px_0_#334155] border-t border-white/10 transition-all"
                 >
                   <Download size={18} />
                 </button>
@@ -360,11 +384,11 @@ function BackgroundRemover() {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      className="flex-1 flex flex-col p-8 gap-6 h-full"
+      exit={{ opacity: 0, y: -30 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className="flex-1 flex flex-col p-4 md:p-8 gap-4 md:gap-6 min-h-0 overflow-y-auto lg:overflow-hidden"
     >
       <div className="flex items-center justify-between shrink-0">
         <div>
@@ -375,10 +399,10 @@ function BackgroundRemover() {
         </div>
       </div>
 
-      <div className="flex flex-1 gap-6 min-h-0">
+      <div className="flex flex-col-reverse lg:flex-row flex-1 gap-6 min-h-0">
         {/* Controls */}
-        <div className="w-80 flex flex-col gap-6 shrink-0 pr-2">
-          <div className="flex-1 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center p-6 text-center hover:border-indigo-500/30 hover:bg-white/5 transition-all cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+        <div className="w-full lg:w-80 flex flex-col gap-6 shrink-0 pr-2">
+          <div className="flex-1 border-2 border-dashed border-white/10 bg-black/20 rounded-2xl shadow-[inset_0_4px_20px_rgba(0,0,0,0.5)] flex flex-col items-center justify-center p-6 text-center hover:border-indigo-500/30 hover:bg-white/5 transition-all cursor-pointer" onClick={() => fileInputRef.current?.click()}>
             <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
             <Upload className="text-slate-500 mb-3" size={32} />
             <p className="text-sm text-slate-300 font-medium">Click to upload image</p>
@@ -388,7 +412,7 @@ function BackgroundRemover() {
           <button 
             onClick={handleProcess}
             disabled={!file || isProcessing || processed}
-            className="w-full py-4 mt-auto bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:hover:bg-indigo-600 text-white rounded-xl font-bold shadow-[0_8px_20px_rgba(79,70,229,0.3)] border border-white/10 uppercase tracking-widest text-xs flex items-center justify-center gap-2 transition-all"
+            className="w-full py-4 mt-auto bg-gradient-to-b from-indigo-500 to-indigo-700 hover:from-indigo-400 hover:to-indigo-600 disabled:opacity-50 disabled:hover:from-indigo-500 disabled:hover:to-indigo-700 text-white rounded-xl font-bold shadow-[0_6px_0_#3730a3,0_15px_20px_rgba(79,70,229,0.4)] hover:-translate-y-1 hover:shadow-[0_8px_0_#3730a3,0_20px_25px_rgba(79,70,229,0.5)] active:translate-y-[6px] active:shadow-[0_0px_0_#3730a3,0_0px_0px_rgba(79,70,229,0)] border-t border-white/20 uppercase tracking-widest text-xs flex items-center justify-center gap-2 transition-all"
           >
             {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Scissors className="w-4 h-4" />}
             {isProcessing ? "Processing..." : "Remove Background"}
@@ -396,7 +420,7 @@ function BackgroundRemover() {
         </div>
 
         {/* Viewport */}
-        <div className="flex-1 rounded-2xl border border-white/10 bg-black/50 relative flex items-center justify-center overflow-hidden">
+        <div className="flex-1 min-h-[300px] lg:min-h-0 rounded-2xl border border-white/10 bg-gradient-to-br from-[#0a0a0f] to-[#040405] relative flex items-center justify-center overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,0.8)] perspective-1000">
           {/* Checkerboard background for transparency effect */}
           <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: "url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+CjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0iI2ZmZiIvPgo8cmVjdCB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9IiNjY2MiLz4KPHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9IiNjY2MiLz4KPC9zdmc+')", backgroundSize: "20px 20px" }}></div>
           
@@ -458,7 +482,7 @@ function BackgroundRemover() {
                         a.download = `lensforge-bg-removed-${Date.now()}.png`;
                         a.click();
                       }}
-                      className="p-2 bg-black/60 hover:bg-black text-white rounded-lg backdrop-blur-md border border-white/10 transition-colors"
+                      className="p-2 bg-gradient-to-b from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 text-white rounded-lg backdrop-blur-md shadow-[0_4px_0_#334155] hover:-translate-y-0.5 hover:shadow-[0_6px_0_#334155] active:translate-y-[4px] active:shadow-[0_0px_0_#334155] border-t border-white/10 transition-all"
                       title="Download image"
                     >
                       <Download size={18} />
@@ -472,7 +496,7 @@ function BackgroundRemover() {
             </div>
           ) : originalUrl ? (
             <div className="relative w-full h-full flex items-center justify-center p-4 z-10">
-              <img src={originalUrl} alt="Preview" className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" />
+              <img src={originalUrl} alt="Preview" className="max-w-full max-h-full object-contain rounded-2xl shadow-[0_30px_60px_rgba(0,0,0,0.8),0_10px_20px_rgba(0,0,0,0.6)] border border-white/10 ring-1 ring-black hover:[transform:rotateX(2deg)_rotateY(-2deg)_scale(1.02)] transition-all duration-500" />
             </div>
           ) : (
             <div className="text-slate-600 flex flex-col items-center gap-3 z-10">
@@ -621,11 +645,11 @@ function FaceEnhancer() {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      className="flex-1 flex flex-col p-8 gap-6 h-full"
+      exit={{ opacity: 0, y: -30 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className="flex-1 flex flex-col p-4 md:p-8 gap-4 md:gap-6 min-h-0 overflow-y-auto lg:overflow-hidden"
     >
       <div className="flex items-center justify-between shrink-0">
         <div>
@@ -636,10 +660,10 @@ function FaceEnhancer() {
         </div>
       </div>
 
-      <div className="flex flex-1 gap-6 min-h-0">
+      <div className="flex flex-col-reverse lg:flex-row flex-1 gap-6 min-h-0">
         {/* Controls */}
-        <div className="w-80 flex flex-col gap-6 shrink-0 pr-2 overflow-y-auto">
-          <div className="h-32 shrink-0 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center p-4 text-center hover:border-indigo-500/30 hover:bg-white/5 transition-all cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+        <div className="w-full lg:w-80 flex flex-col gap-6 shrink-0 pr-2 overflow-y-auto">
+          <div className="h-32 shrink-0 border-2 border-dashed border-white/10 bg-black/20 rounded-2xl shadow-[inset_0_4px_20px_rgba(0,0,0,0.5)] flex flex-col items-center justify-center p-4 text-center hover:border-indigo-500/30 hover:bg-white/5 transition-all cursor-pointer" onClick={() => fileInputRef.current?.click()}>
             <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
             <Upload className="text-slate-500 mb-2" size={24} />
             <p className="text-sm text-slate-300 font-medium">Upload portrait</p>
@@ -675,7 +699,7 @@ function FaceEnhancer() {
           <button 
             onClick={handleProcess}
             disabled={!file || isProcessing || processed}
-            className="w-full py-4 mt-auto shrink-0 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:hover:bg-indigo-600 text-white rounded-xl font-bold shadow-[0_8px_20px_rgba(79,70,229,0.3)] border border-white/10 uppercase tracking-widest text-xs flex items-center justify-center gap-2 transition-all"
+            className="w-full py-4 mt-auto shrink-0 bg-gradient-to-b from-indigo-500 to-indigo-700 hover:from-indigo-400 hover:to-indigo-600 disabled:opacity-50 disabled:hover:from-indigo-500 disabled:hover:to-indigo-700 text-white rounded-xl font-bold shadow-[0_6px_0_#3730a3,0_15px_20px_rgba(79,70,229,0.4)] hover:-translate-y-1 hover:shadow-[0_8px_0_#3730a3,0_20px_25px_rgba(79,70,229,0.5)] active:translate-y-[6px] active:shadow-[0_0px_0_#3730a3,0_0px_0px_rgba(79,70,229,0)] border-t border-white/20 uppercase tracking-widest text-xs flex items-center justify-center gap-2 transition-all"
           >
             {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
             {isProcessing ? "Enhancing..." : "Enhance Face"}
@@ -683,7 +707,7 @@ function FaceEnhancer() {
         </div>
 
         {/* Viewport */}
-        <div className="flex-1 rounded-2xl border border-white/10 bg-black/50 relative flex items-center justify-center overflow-hidden">
+        <div className="flex-1 min-h-[300px] lg:min-h-0 rounded-2xl border border-white/10 bg-gradient-to-br from-[#0a0a0f] to-[#040405] relative flex items-center justify-center overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,0.8)] perspective-1000">
           <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/10 to-transparent pointer-events-none"></div>
           
           {isProcessing ? (
@@ -711,7 +735,7 @@ function FaceEnhancer() {
                    e.currentTarget.releasePointerCapture(e.pointerId);
                  }}
                >
-                 <img src={originalUrl} alt="Original" className="max-w-full max-h-full object-contain rounded-lg shadow-2xl absolute pointer-events-none opacity-50" />
+                 <img src={originalUrl} alt="Original" className="max-w-full max-h-full object-contain rounded-2xl shadow-[0_30px_60px_rgba(0,0,0,0.8),0_10px_20px_rgba(0,0,0,0.6)] border border-white/10 ring-1 ring-black absolute pointer-events-none opacity-50" />
                  <div className="relative w-fit h-full flex items-center justify-center">
                    {/* Original Image (Background) */}
                    <img src={originalUrl} alt="Original" className="max-h-full object-contain rounded-lg pointer-events-none" />
@@ -745,7 +769,7 @@ function FaceEnhancer() {
                         a.download = `lensforge-enhanced-${Date.now()}.jpg`;
                         a.click();
                       }}
-                      className="p-2 bg-black/60 hover:bg-black text-white rounded-lg backdrop-blur-md border border-white/10 transition-colors"
+                      className="p-2 bg-gradient-to-b from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 text-white rounded-lg backdrop-blur-md shadow-[0_4px_0_#334155] hover:-translate-y-0.5 hover:shadow-[0_6px_0_#334155] active:translate-y-[4px] active:shadow-[0_0px_0_#334155] border-t border-white/10 transition-all"
                       title="Download image"
                     >
                       <Download size={18} />
@@ -759,7 +783,7 @@ function FaceEnhancer() {
             </div>
           ) : originalUrl ? (
             <div className="relative w-full h-full flex items-center justify-center p-4 z-10">
-              <img src={originalUrl} alt="Preview" className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" />
+              <img src={originalUrl} alt="Preview" className="max-w-full max-h-full object-contain rounded-2xl shadow-[0_30px_60px_rgba(0,0,0,0.8),0_10px_20px_rgba(0,0,0,0.6)] border border-white/10 ring-1 ring-black hover:[transform:rotateX(2deg)_rotateY(-2deg)_scale(1.02)] transition-all duration-500" />
             </div>
           ) : (
             <div className="text-slate-600 flex flex-col items-center gap-3 z-10">
@@ -812,6 +836,19 @@ function PhotoEditor() {
   const [rotation, setRotation] = useState(0);
   const [flipH, setFlipH] = useState(false);
   const [flipV, setFlipV] = useState(false);
+
+  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+  const downloadMenuRef = useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (downloadMenuRef.current && !downloadMenuRef.current.contains(event.target as Node)) {
+        setShowDownloadMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const stateRef = useRef<HistoryState>({
     brightness: 100, contrast: 100, saturation: 100, sepia: 0, blur: 0, hue: 0, invert: 0, grayscale: 0, rotation: 0, flipH: false, flipV: false, originalUrl: ""
@@ -885,6 +922,79 @@ function PhotoEditor() {
       setHistoryIndex(historyIndex + 1);
       restoreState(nextState);
     }
+  };
+
+  const autoEnhance = () => {
+    if (!originalUrl) return;
+
+    const img = new window.Image();
+    img.crossOrigin = "Anonymous";
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      
+      try {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        
+        let totalLuma = 0;
+        let minLuma = 255;
+        let maxLuma = 0;
+        let totalSaturation = 0;
+
+        const step = 4;
+        let count = 0;
+
+        for (let i = 0; i < data.length; i += step * 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          
+          const luma = 0.299 * r + 0.587 * g + 0.114 * b;
+          totalLuma += luma;
+          
+          if (luma < minLuma) minLuma = luma;
+          if (luma > maxLuma) maxLuma = luma;
+          
+          const max = Math.max(r, g, b);
+          const min = Math.min(r, g, b);
+          const chroma = max - min;
+          const saturationValue = max === 0 ? 0 : chroma / max;
+          totalSaturation += saturationValue;
+          count++;
+        }
+        
+        const avgLuma = totalLuma / count;
+        const avgSaturation = totalSaturation / count;
+        
+        let newBrightness = 100 * (128 / (avgLuma || 1));
+        newBrightness = Math.max(80, Math.min(150, newBrightness));
+        
+        const lumaRange = maxLuma - minLuma;
+        let newContrast = 100 * (255 / (lumaRange || 1));
+        newContrast = Math.max(100, Math.min(150, newContrast));
+        
+        let newSaturation = 100;
+        if (avgSaturation > 0 && avgSaturation < 0.4) {
+          newSaturation = 100 * (0.4 / avgSaturation);
+          newSaturation = Math.max(100, Math.min(150, newSaturation));
+        }
+        
+        updateAndCommitState({
+          brightness: Math.round(newBrightness),
+          contrast: Math.round(newContrast),
+          saturation: Math.round(newSaturation)
+        });
+      } catch (e) {
+        console.error("Failed to auto-enhance", e);
+      }
+    };
+    img.src = originalUrl;
   };
 
   const [crop, setCrop] = useState<Crop>();
@@ -1031,7 +1141,7 @@ function PhotoEditor() {
     };
   };
 
-  const handleDownload = () => {
+  const handleDownload = (format: "jpeg" | "png" | "webp") => {
     if (!originalUrl) return;
     const img = new window.Image();
     img.crossOrigin = "Anonymous";
@@ -1077,24 +1187,24 @@ function PhotoEditor() {
         sourceHeight
       );
       
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
+      const dataUrl = canvas.toDataURL(`image/${format}`, 0.95);
       const a = document.createElement('a');
       a.href = dataUrl;
-      a.download = `lensforge-edited-${Date.now()}.jpg`;
+      a.download = `lensforge-edited-${Date.now()}.${format === "jpeg" ? "jpg" : format}`;
       a.click();
     };
   };
 
   return (
     <motion.div 
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      transition={{ duration: 0.3 }}
-      className="absolute inset-0 flex flex-col md:flex-row"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -30 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className="flex-1 relative flex flex-col-reverse lg:flex-row min-h-0 overflow-hidden"
     >
       {/* Left Sidebar - Settings */}
-      <div className="w-full md:w-80 border-r border-white/10 bg-[#0a0a0c] flex flex-col z-10 shrink-0">
+      <div className="w-full lg:w-80 h-[45vh] lg:h-full border-t lg:border-t-0 lg:border-r border-white/5 bg-gradient-to-br from-[#0d0d12] to-[#08080a] flex flex-col z-10 shrink-0 shadow-[10px_0_30px_rgba(0,0,0,0.4)]">
         <div className="p-6 border-b border-white/10">
           <h2 className="text-sm font-bold text-white tracking-widest uppercase mb-1">Photo Editor</h2>
           <p className="text-xs text-slate-400">Adjust properties & filters</p>
@@ -1105,7 +1215,7 @@ function PhotoEditor() {
             <div className="flex flex-col gap-4">
               <button 
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_25px_rgba(79,70,229,0.5)]"
+                className="w-full h-12 bg-gradient-to-b from-indigo-500 to-indigo-700 hover:from-indigo-400 hover:to-indigo-600 text-white text-sm font-medium rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_6px_0_#3730a3,0_15px_20px_rgba(79,70,229,0.4)] hover:-translate-y-1 hover:shadow-[0_8px_0_#3730a3,0_20px_25px_rgba(79,70,229,0.5)] active:translate-y-[6px] active:shadow-[0_0px_0_#3730a3,0_0px_0px_rgba(79,70,229,0)] border-t border-white/20"
               >
                 <Upload size={18} />
                 Upload Photo
@@ -1175,6 +1285,20 @@ function PhotoEditor() {
                       <FlipVertical size={16} />
                     </button>
                   </div>
+                </div>
+
+                <div className="flex items-center justify-between pb-5 border-b border-white/10">
+                  <div className="flex flex-col">
+                    <label className="text-xs font-bold text-white tracking-widest uppercase">Auto Enhance</label>
+                    <span className="text-[10px] text-slate-400 mt-1">Smart adjustments</span>
+                  </div>
+                  <button 
+                    onClick={autoEnhance}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-b from-indigo-500 to-indigo-700 hover:from-indigo-400 hover:to-indigo-600 text-white text-xs font-bold rounded-lg shadow-[0_4px_0_#3730a3,0_10px_15px_rgba(79,70,229,0.3)] hover:-translate-y-0.5 hover:shadow-[0_6px_0_#3730a3,0_15px_20px_rgba(79,70,229,0.4)] active:translate-y-[4px] active:shadow-[0_0px_0_#3730a3,0_0px_0px_rgba(79,70,229,0)] border-t border-white/20 transition-all uppercase tracking-wider"
+                  >
+                    <Zap size={14} />
+                    <span>Auto</span>
+                  </button>
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -1275,7 +1399,7 @@ function PhotoEditor() {
                     setAspect(undefined);
                     setIsCropping(false);
                   }}
-                  className="w-full h-10 bg-white/5 hover:bg-white/10 text-slate-300 text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2 border border-white/5"
+                  className="w-full h-10 bg-gradient-to-b from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 text-slate-200 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-2 shadow-[0_4px_0_#334155] hover:-translate-y-0.5 hover:shadow-[0_6px_0_#334155] active:translate-y-[4px] active:shadow-[0_0px_0_#334155] border-t border-white/10"
                 >
                   <RefreshCcw size={16} />
                   Reset Filters
@@ -1285,7 +1409,7 @@ function PhotoEditor() {
                     setFile(null);
                     setOriginalUrl(null);
                   }}
-                  className="w-full h-10 bg-transparent hover:bg-white/5 text-slate-400 hover:text-slate-300 text-sm font-medium rounded-lg transition-colors"
+                  className="w-full h-10 bg-gradient-to-b from-[#1a1a24] to-[#0f0f14] hover:from-[#2a2a36] hover:to-[#1a1a24] text-slate-400 hover:text-slate-200 text-sm font-medium rounded-lg transition-all shadow-[0_4px_0_#000000,0_5px_10px_rgba(0,0,0,0.5)] hover:-translate-y-0.5 hover:shadow-[0_6px_0_#000000,0_10px_15px_rgba(0,0,0,0.6)] active:translate-y-[4px] active:shadow-[0_0px_0_#000000,0_0px_0px_rgba(0,0,0,0)] border-t border-white/5"
                 >
                   Upload New Image
                 </button>
@@ -1296,12 +1420,12 @@ function PhotoEditor() {
       </div>
 
       {/* Right Content - Preview */}
-      <div className="flex-1 relative bg-black/40 flex items-center justify-center overflow-hidden p-8">
+      <div className="flex-1 relative bg-gradient-to-br from-[#0a0a0f] to-[#040405] flex items-center justify-center overflow-hidden p-4 md:p-8 shadow-[inset_0_0_100px_rgba(0,0,0,0.8)] perspective-1000">
         <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at center, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
         
         <div className="relative w-full h-full flex flex-col items-center justify-center">
           {originalUrl ? (
-            <div className="relative flex items-center justify-center w-full h-full z-10 p-12">
+            <div className="relative flex items-center justify-center w-full h-full z-10 p-4 md:p-12">
                {isCropping ? (
                  <ReactCrop
                    crop={crop}
@@ -1327,7 +1451,7 @@ function PhotoEditor() {
                    ref={imgRef}
                    src={originalUrl} 
                    alt="Preview" 
-                   className="block max-w-full rounded-lg shadow-2xl transition-all duration-75" 
+                   className="block max-w-full rounded-2xl shadow-[0_30px_60px_rgba(0,0,0,0.8),0_10px_20px_rgba(0,0,0,0.6)] border border-white/10 ring-1 ring-black transition-all duration-500 hover:[transform:rotateX(2deg)_rotateY(-2deg)] hover:scale-105" 
                    style={{ 
                      filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) sepia(${sepia}%) blur(${blur}px) hue-rotate(${hue}deg) invert(${invert}%) grayscale(${grayscale}%)`,
                      transform: `rotate(${rotation}deg) scale(${flipH ? -1 : 1}, ${flipV ? -1 : 1})`,
@@ -1339,7 +1463,7 @@ function PhotoEditor() {
                   <button 
                     onClick={undo}
                     disabled={historyIndex <= 0}
-                    className="p-2 bg-black/60 hover:bg-black text-white rounded-lg backdrop-blur-md border border-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 bg-gradient-to-b from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 text-white rounded-lg backdrop-blur-md shadow-[0_4px_0_#334155] hover:-translate-y-0.5 hover:shadow-[0_6px_0_#334155] active:translate-y-[4px] active:shadow-[0_0px_0_#334155] border-t border-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-[0_4px_0_#334155]"
                     title="Undo"
                   >
                     <Undo size={18} />
@@ -1347,18 +1471,36 @@ function PhotoEditor() {
                   <button 
                     onClick={redo}
                     disabled={historyIndex >= history.length - 1}
-                    className="p-2 bg-black/60 hover:bg-black text-white rounded-lg backdrop-blur-md border border-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 bg-gradient-to-b from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 text-white rounded-lg backdrop-blur-md shadow-[0_4px_0_#334155] hover:-translate-y-0.5 hover:shadow-[0_6px_0_#334155] active:translate-y-[4px] active:shadow-[0_0px_0_#334155] border-t border-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-[0_4px_0_#334155]"
                     title="Redo"
                   >
                     <Redo size={18} />
                   </button>
-                  <button 
-                    onClick={handleDownload}
-                    className="p-2 bg-black/60 hover:bg-black text-white rounded-lg backdrop-blur-md border border-white/10 transition-colors"
-                    title="Download Image"
-                  >
-                    <Download size={18} />
-                  </button>
+                  <div className="relative" ref={downloadMenuRef}>
+                    <div className="flex rounded-lg shadow-[0_4px_0_#334155] hover:-translate-y-0.5 hover:shadow-[0_6px_0_#334155] active:translate-y-[4px] active:shadow-[0_0px_0_#334155] transition-all">
+                      <button 
+                        onClick={() => handleDownload("jpeg")}
+                        className="p-2 bg-gradient-to-b from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 text-white rounded-l-lg backdrop-blur-md border-t border-white/10 flex items-center justify-center border-r border-slate-900"
+                        title="Download Image (JPEG)"
+                      >
+                        <Download size={18} />
+                      </button>
+                      <button
+                        onClick={() => setShowDownloadMenu(!showDownloadMenu)}
+                        className="p-2 bg-gradient-to-b from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700 text-white rounded-r-lg backdrop-blur-md border-t border-white/10 flex items-center justify-center"
+                        title="Download Options"
+                      >
+                        <ChevronDown size={18} />
+                      </button>
+                    </div>
+                    {showDownloadMenu && (
+                      <div className="absolute right-0 top-full mt-2 w-32 bg-[#1a1a24] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50 flex flex-col origin-top-right animate-in fade-in zoom-in-95 duration-200">
+                        <button onClick={() => { handleDownload("jpeg"); setShowDownloadMenu(false); }} className="px-4 py-2 text-sm text-left text-slate-300 hover:bg-white/5 hover:text-white transition-colors">JPEG (.jpg)</button>
+                        <button onClick={() => { handleDownload("png"); setShowDownloadMenu(false); }} className="px-4 py-2 text-sm text-left text-slate-300 hover:bg-white/5 hover:text-white transition-colors border-t border-white/5">PNG (.png)</button>
+                        <button onClick={() => { handleDownload("webp"); setShowDownloadMenu(false); }} className="px-4 py-2 text-sm text-left text-slate-300 hover:bg-white/5 hover:text-white transition-colors border-t border-white/5">WebP (.webp)</button>
+                      </div>
+                    )}
+                  </div>
                </div>
             </div>
           ) : (
@@ -1375,10 +1517,20 @@ function PhotoEditor() {
 
 function LandingPage({ onEnter }: { onEnter: (tool: Tool) => void }) {
   return (
-    <div className="w-full min-h-screen bg-[#020203] text-slate-200 font-sans selection:bg-indigo-500/30 overflow-y-auto">
+    <div className="w-full min-h-screen bg-[#020203] text-slate-200 font-sans selection:bg-indigo-500/30 overflow-y-auto relative perspective-1000">
+      {/* 3D Background */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <AIBrainBackground />
+        <motion.div animate={{ rotateX: 360, rotateY: 360 }} transition={{ duration: 30, repeat: Infinity, ease: "linear" }} className="absolute top-[20%] right-[15%] w-32 h-32 bg-gradient-to-br from-indigo-500/20 to-cyan-500/20 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_0_50px_rgba(79,70,229,0.2)]" style={{ transformStyle: "preserve-3d" }}></motion.div>
+        <motion.div animate={{ rotateX: -360, rotateY: 360, rotateZ: 180 }} transition={{ duration: 40, repeat: Infinity, ease: "linear" }} className="absolute bottom-[20%] left-[10%] w-48 h-48 bg-gradient-to-tr from-fuchsia-500/20 to-purple-500/20 backdrop-blur-xl border border-white/10 rounded-full shadow-[0_0_60px_rgba(217,70,239,0.2)]" style={{ transformStyle: "preserve-3d" }}></motion.div>
+        <div className="absolute top-[-10%] right-[-10%] w-[800px] h-[800px] bg-indigo-600/20 rounded-full blur-[150px] mix-blend-screen opacity-50"></div>
+        <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-cyan-600/10 rounded-full blur-[120px] mix-blend-screen opacity-50"></div>
+        <div className="absolute top-[40%] left-[20%] w-[400px] h-[400px] bg-fuchsia-600/10 rounded-full blur-[100px] mix-blend-screen opacity-40"></div>
+      </div>
+      
       {/* Header */}
-      <header className="fixed top-0 inset-x-0 h-20 border-b border-white/5 bg-[#020203]/80 backdrop-blur-md z-50 flex items-center justify-between px-8 md:px-16">
-        <div className="flex items-center gap-3">
+      <header className="fixed top-0 inset-x-0 h-20 border-b border-white/5 bg-[#020203]/80 backdrop-blur-md z-50 flex items-center justify-between px-4 md:px-16">
+        <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
           <div className="w-8 h-8 bg-gradient-to-tr from-indigo-600 to-cyan-400 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(79,70,229,0.5)]">
             <div className="w-4 h-4 bg-white/20 rounded-sm rotate-45 border border-white/40"></div>
           </div>
@@ -1389,41 +1541,41 @@ function LandingPage({ onEnter }: { onEnter: (tool: Tool) => void }) {
           <a href="#services" className="hover:text-white transition-colors">Services</a>
           <button onClick={() => onEnter("generate")} className="hover:text-white transition-colors">Studio</button>
         </nav>
-        <button onClick={() => onEnter("generate")} className="px-5 py-2.5 bg-white text-black text-sm font-semibold rounded-full hover:bg-slate-200 transition-colors">
+        <button onClick={() => onEnter("generate")} className="px-5 py-2.5 bg-gradient-to-b from-white to-slate-200 text-black text-sm font-semibold rounded-xl transition-all shadow-[0_4px_0_#94a3b8] hover:-translate-y-0.5 hover:shadow-[0_6px_0_#94a3b8] active:translate-y-[4px] active:shadow-[0_0px_0_#94a3b8]">
           Open Studio
         </button>
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-40 pb-20 px-8 md:px-16 max-w-7xl mx-auto flex flex-col items-center text-center">
+      <section className="relative pt-40 pb-20 px-4 md:px-16 max-w-7xl mx-auto flex flex-col items-center text-center">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"></div>
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="relative z-10"
+          className="relative z-10" style={{ transformStyle: "preserve-3d" }}
         >
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 text-xs font-semibold mb-8">
             <Sparkles size={14} />
             <span>Next-Generation AI Vision</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-white mb-6 leading-[1.1]">
+          <motion.h1 animate={{ rotateX: [0, 2, 0, -2, 0], rotateY: [0, -2, 0, 2, 0] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} className="text-5xl md:text-7xl font-bold tracking-tighter text-white mb-6 leading-[1.1]" style={{ transformPerspective: 1200 }}>
             Forge the Impossible <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-cyan-400 to-emerald-400">With Intelligent Pixels</span>
-          </h1>
+          </motion.h1>
           <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
             Unleash your creativity with Lensforge. Generate, edit, enhance, and manipulate images using cutting-edge artificial intelligence, directly from your browser.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mt-4">
             <button 
               onClick={() => onEnter("generate")} 
-              className="group relative flex items-center gap-2 px-8 py-4 bg-white text-black font-semibold rounded-full hover:bg-slate-100 transition-all active:scale-95"
+              className="group relative flex items-center gap-2 px-8 py-4 bg-gradient-to-b from-white to-slate-200 text-black font-semibold rounded-2xl transition-all shadow-[0_6px_0_#94a3b8,0_15px_20px_rgba(0,0,0,0.4)] hover:-translate-y-1 hover:shadow-[0_8px_0_#94a3b8,0_20px_25px_rgba(0,0,0,0.5)] active:translate-y-[6px] active:shadow-[0_0px_0_#94a3b8,0_0px_0px_rgba(0,0,0,0)]"
             >
               <span>Start Generating</span>
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </button>
             <button 
               onClick={() => onEnter("edit")} 
-              className="flex items-center gap-2 px-8 py-4 bg-white/5 border border-white/10 text-white font-semibold rounded-full hover:bg-white/10 transition-all active:scale-95"
+              className="group relative flex items-center gap-2 px-8 py-4 bg-gradient-to-b from-[#1a1a24] to-[#0f0f14] border-t border-white/10 text-white font-semibold rounded-2xl transition-all shadow-[0_6px_0_#000000,0_15px_20px_rgba(0,0,0,0.4)] hover:-translate-y-1 hover:shadow-[0_8px_0_#000000,0_20px_25px_rgba(0,0,0,0.5)] active:translate-y-[6px] active:shadow-[0_0px_0_#000000,0_0px_0px_rgba(0,0,0,0)]"
             >
               <SlidersHorizontal size={18} />
               <span>Photo Editor</span>
@@ -1433,7 +1585,7 @@ function LandingPage({ onEnter }: { onEnter: (tool: Tool) => void }) {
       </section>
 
       {/* Grid Services Section */}
-      <section id="services" className="py-24 px-8 md:px-16 max-w-7xl mx-auto border-t border-white/5 relative">
+      <section id="services" className="py-24 px-4 md:px-16 max-w-7xl mx-auto border-t border-white/5 relative">
         <div className="mb-16 text-center md:text-left flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-white mb-4">Core Capabilities</h2>
@@ -1519,18 +1671,21 @@ function LandingPage({ onEnter }: { onEnter: (tool: Tool) => void }) {
 function ServiceCard({ icon, title, description, gradient, iconColor, onClick }: { icon: React.ReactNode, title: string, description: string, gradient: string, iconColor: string, onClick: () => void }) {
   return (
     <motion.div 
-      whileHover={{ y: -5 }}
+      whileHover={{ y: -8, rotateX: 2, rotateY: -2, scale: 1.02 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
       onClick={onClick}
-      className="group cursor-pointer relative rounded-2xl p-px bg-gradient-to-b from-white/10 to-transparent overflow-hidden"
+      style={{ perspective: 1000 }}
+      className="group cursor-pointer relative rounded-3xl p-px bg-gradient-to-b from-white/20 to-white/5 shadow-[0_8px_0_rgba(0,0,0,0.8),0_20px_30px_rgba(0,0,0,0.6)] hover:shadow-[0_12px_0_rgba(0,0,0,0.8),0_30px_40px_rgba(0,0,0,0.7)] active:translate-y-[8px] active:shadow-[0_0px_0_rgba(0,0,0,0.8),0_0px_0px_rgba(0,0,0,0)]"
     >
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
-      <div className="relative h-full bg-[#050507] rounded-2xl p-8 flex flex-col items-start gap-4 backdrop-blur-sm z-10 border border-transparent group-hover:border-white/5 transition-colors">
-        <div className={`p-3 rounded-xl bg-white/5 border border-white/10 ${iconColor}`}>
+      <div className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
+      <div className="relative h-full bg-gradient-to-b from-[#1a1a24] to-[#0f0f14] rounded-[23px] p-8 flex flex-col items-start gap-4 backdrop-blur-sm z-10 border-t border-white/10 shadow-[inset_0_20px_40px_rgba(255,255,255,0.02)] group-hover:border-white/20 transition-all overflow-hidden">
+        <div className="absolute -top-24 -right-24 w-48 h-48 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-colors"></div>
+        <div className={`relative p-4 rounded-2xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 shadow-[inset_0_2px_10px_rgba(255,255,255,0.1),0_5px_15px_rgba(0,0,0,0.5)] ${iconColor}`}>
           {icon}
         </div>
-        <h3 className="text-xl font-bold text-white tracking-tight">{title}</h3>
-        <p className="text-slate-400 text-sm leading-relaxed">{description}</p>
-        <div className="mt-auto pt-4 flex items-center gap-2 text-sm font-semibold text-white/50 group-hover:text-white transition-colors">
+        <h3 className="text-xl font-bold text-white tracking-tight drop-shadow-md relative">{title}</h3>
+        <p className="text-slate-400 text-sm leading-relaxed drop-shadow-sm relative">{description}</p>
+        <div className="mt-auto pt-4 flex items-center gap-2 text-sm font-bold text-white/50 group-hover:text-white transition-colors relative">
           <span>Try it out</span>
           <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
         </div>
