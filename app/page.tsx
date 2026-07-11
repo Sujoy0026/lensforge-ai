@@ -19,16 +19,24 @@ import {
   FlipHorizontal,
   FlipVertical,
   Undo,
-  Redo
+  Redo,
+  ArrowRight,
+  Zap,
+  Layers,
+  ChevronRight
 } from "lucide-react";
 import Image from "next/image";
 import ReactCrop, { type Crop, type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
-type Tool = "generate" | "bg-remove" | "enhance" | "edit";
+type Tool = "landing" | "generate" | "bg-remove" | "enhance" | "edit";
 
 export default function Page() {
-  const [activeTool, setActiveTool] = useState<Tool>("generate");
+  const [activeTool, setActiveTool] = useState<Tool>("landing");
+
+  if (activeTool === "landing") {
+    return <LandingPage onEnter={setActiveTool} />;
+  }
 
   return (
     <div className="w-full h-screen bg-[#020203] text-slate-200 font-sans flex overflow-hidden select-none">
@@ -1349,6 +1357,172 @@ function PhotoEditor() {
               <span className="text-sm font-medium">Upload a photo to edit</span>
             </div>
           )}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function LandingPage({ onEnter }: { onEnter: (tool: Tool) => void }) {
+  return (
+    <div className="w-full min-h-screen bg-[#020203] text-slate-200 font-sans selection:bg-indigo-500/30 overflow-y-auto">
+      {/* Header */}
+      <header className="fixed top-0 inset-x-0 h-20 border-b border-white/5 bg-[#020203]/80 backdrop-blur-md z-50 flex items-center justify-between px-8 md:px-16">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-gradient-to-tr from-indigo-600 to-cyan-400 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(79,70,229,0.5)]">
+            <div className="w-4 h-4 bg-white/20 rounded-sm rotate-45 border border-white/40"></div>
+          </div>
+          <span className="text-xl font-bold tracking-tight text-white">LENS<span className="text-indigo-400">FORGE</span></span>
+        </div>
+        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
+          <a href="#features" className="hover:text-white transition-colors">Features</a>
+          <a href="#services" className="hover:text-white transition-colors">Services</a>
+          <button onClick={() => onEnter("generate")} className="hover:text-white transition-colors">Studio</button>
+        </nav>
+        <button onClick={() => onEnter("generate")} className="px-5 py-2.5 bg-white text-black text-sm font-semibold rounded-full hover:bg-slate-200 transition-colors">
+          Open Studio
+        </button>
+      </header>
+
+      {/* Hero Section */}
+      <section className="relative pt-40 pb-20 px-8 md:px-16 max-w-7xl mx-auto flex flex-col items-center text-center">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"></div>
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="relative z-10"
+        >
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 text-xs font-semibold mb-8">
+            <Sparkles size={14} />
+            <span>Next-Generation AI Vision</span>
+          </div>
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-white mb-6 leading-[1.1]">
+            Forge the Impossible <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-cyan-400 to-emerald-400">With Intelligent Pixels</span>
+          </h1>
+          <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+            Unleash your creativity with Lensforge. Generate, edit, enhance, and manipulate images using cutting-edge artificial intelligence, directly from your browser.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button 
+              onClick={() => onEnter("generate")} 
+              className="group relative flex items-center gap-2 px-8 py-4 bg-white text-black font-semibold rounded-full hover:bg-slate-100 transition-all active:scale-95"
+            >
+              <span>Start Generating</span>
+              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            </button>
+            <button 
+              onClick={() => onEnter("edit")} 
+              className="flex items-center gap-2 px-8 py-4 bg-white/5 border border-white/10 text-white font-semibold rounded-full hover:bg-white/10 transition-all active:scale-95"
+            >
+              <SlidersHorizontal size={18} />
+              <span>Photo Editor</span>
+            </button>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Grid Services Section */}
+      <section id="services" className="py-24 px-8 md:px-16 max-w-7xl mx-auto border-t border-white/5 relative">
+        <div className="mb-16 text-center md:text-left flex flex-col md:flex-row md:items-end justify-between gap-8">
+          <div>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-white mb-4">Core Capabilities</h2>
+            <p className="text-slate-400 max-w-lg">A complete suite of AI-powered creative tools designed for speed, precision, and imagination.</p>
+          </div>
+          <button onClick={() => onEnter("generate")} className="text-indigo-400 font-medium flex items-center gap-1 hover:text-indigo-300 transition-colors mx-auto md:mx-0">
+            <span>Explore all tools</span>
+            <ChevronRight size={18} />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Card 1 */}
+          <ServiceCard 
+            icon={<Wand2 size={24} />}
+            title="Text-to-Image Generation"
+            description="Turn your wildest descriptions into high-fidelity visuals instantly using our advanced AI generation models."
+            gradient="from-indigo-500/20 to-purple-500/20"
+            iconColor="text-indigo-400"
+            onClick={() => onEnter("generate")}
+          />
+          
+          {/* Card 2 */}
+          <ServiceCard 
+            icon={<Scissors size={24} />}
+            title="AI Background Removal"
+            description="Extract subjects with pixel-perfect precision. Remove distracting backgrounds from any photo in seconds."
+            gradient="from-cyan-500/20 to-blue-500/20"
+            iconColor="text-cyan-400"
+            onClick={() => onEnter("bg-remove")}
+          />
+
+          {/* Card 3 */}
+          <ServiceCard 
+            icon={<Sparkles size={24} />}
+            title="Face & Detail Enhancer"
+            description="Upscale blurry portraits, restore old photos, and enhance facial features with stunning clarity."
+            gradient="from-emerald-500/20 to-teal-500/20"
+            iconColor="text-emerald-400"
+            onClick={() => onEnter("enhance")}
+          />
+
+          {/* Card 4 */}
+          <ServiceCard 
+            icon={<SlidersHorizontal size={24} />}
+            title="Pro Photo Editor"
+            description="Fine-tune exposure, color, contrast, and apply advanced transformations directly within the platform."
+            gradient="from-amber-500/20 to-orange-500/20"
+            iconColor="text-amber-400"
+            onClick={() => onEnter("edit")}
+          />
+          
+          {/* Card 5 */}
+          <ServiceCard 
+            icon={<Layers size={24} />}
+            title="Batch Processing"
+            description="Apply filters, watermarks, or background removals to multiple files simultaneously."
+            gradient="from-pink-500/20 to-rose-500/20"
+            iconColor="text-pink-400"
+            onClick={() => onEnter("generate")} 
+          />
+
+          {/* Card 6 */}
+          <ServiceCard 
+            icon={<Zap size={24} />}
+            title="Lightning Fast"
+            description="Built on edge computing and optimized WebGL for real-time rendering and instant feedback."
+            gradient="from-yellow-500/20 to-amber-500/20"
+            iconColor="text-yellow-400"
+            onClick={() => onEnter("generate")} 
+          />
+        </div>
+      </section>
+      
+      {/* Footer */}
+      <footer className="border-t border-white/5 py-12 text-center text-slate-500 text-sm">
+        <p>&copy; {new Date().getFullYear()} Lensforge. All rights reserved.</p>
+      </footer>
+    </div>
+  );
+}
+
+function ServiceCard({ icon, title, description, gradient, iconColor, onClick }: { icon: React.ReactNode, title: string, description: string, gradient: string, iconColor: string, onClick: () => void }) {
+  return (
+    <motion.div 
+      whileHover={{ y: -5 }}
+      onClick={onClick}
+      className="group cursor-pointer relative rounded-2xl p-px bg-gradient-to-b from-white/10 to-transparent overflow-hidden"
+    >
+      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
+      <div className="relative h-full bg-[#050507] rounded-2xl p-8 flex flex-col items-start gap-4 backdrop-blur-sm z-10 border border-transparent group-hover:border-white/5 transition-colors">
+        <div className={`p-3 rounded-xl bg-white/5 border border-white/10 ${iconColor}`}>
+          {icon}
+        </div>
+        <h3 className="text-xl font-bold text-white tracking-tight">{title}</h3>
+        <p className="text-slate-400 text-sm leading-relaxed">{description}</p>
+        <div className="mt-auto pt-4 flex items-center gap-2 text-sm font-semibold text-white/50 group-hover:text-white transition-colors">
+          <span>Try it out</span>
+          <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
         </div>
       </div>
     </motion.div>
