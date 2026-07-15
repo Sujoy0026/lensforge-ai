@@ -43,7 +43,7 @@ export default function Page() {
   }
 
   return (
-    <div className="w-full h-screen bg-[#020203] text-slate-200 font-sans flex overflow-hidden select-none relative">
+    <div className="w-full h-[100dvh] bg-[#020203] text-slate-200 font-sans flex overflow-hidden select-none relative">
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
         {isMobileMenuOpen && (
@@ -1517,7 +1517,7 @@ function PhotoEditor() {
 
 function LandingPage({ onEnter }: { onEnter: (tool: Tool) => void }) {
   return (
-    <div className="w-full min-h-screen bg-[#020203] text-slate-200 font-sans selection:bg-indigo-500/30 overflow-y-auto relative perspective-1000">
+    <div className="w-full min-h-[100dvh] bg-[#020203] text-slate-200 font-sans selection:bg-indigo-500/30 overflow-y-auto overflow-x-hidden relative perspective-1000">
       {/* 3D Background */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <AIBrainBackground />
